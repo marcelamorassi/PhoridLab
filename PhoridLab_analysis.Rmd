@@ -1,0 +1,76 @@
+---
+title: "PhoridLab"
+author: "Marcela Morassi"
+date: "11/20/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(ggpubr)
+library(RColorBrewer)
+library(rcompanion)
+library(dplyr)
+library(ggplot2)
+library(ggforce)
+library(vegan)
+theme_set(theme_classic()) # Set the theme
+
+
+setwd("C:/Users/Marcela Morassi/Documents/Github/PhoridLab")
+
+data <- read.csv("phorid_data_f18.csv")
+```
+
+
+Effects of phorids on ant foraging
+ANCOVA
+```{r}
+#Standardizing ants and temp by baseline
+data2 <- data %>% 
+  mutate(Time_Step = gsub(".{2}$", "", Time_Step)) %>% 
+  group_by(Team, Treatment, Time_Step) %>% 
+  mutate(Avg_Baseline_Ants = mean(Number_Ants)) %>% 
+  mutate(std_ants = Number_Ants/Avg_Baseline_Ants) %>% 
+  mutate(Avg_Baseline_Temp = mean(Temp)) %>% 
+  mutate(std_temp = Temp/Avg_Baseline_Temp)
+
+#ANCOVA
+phorid.lm = lm(std_ants ~ Time * Treatment, data = data2)
+summary(phorid.lm)
+
+#Plotting regression
+ggplot(data2, mapping = aes(Time, std_ants, color=Treatment))+
+  geom_smooth(method='lm')
+
+```
+
+Effects on environmental conditions
+```{r}
+#Create a scatter plot with temperature on the x-axis 
+#and number of ants leaving on the y-axis; 
+#separate control and experimental data into different panels. 
+ggplot(data2, mapping = aes(std_temp, std_ants))+
+  geom_point()+
+  facet_wrap(facets = vars(Treatment))+
+  geom_smooth(method='lm')
+
+#filtering data
+data_control = data2 %>% 
+  filter(Treatment=="Control")
+data_experimental = data2 %>% 
+  filter(Treatment =="Experimental")
+
+#linear regressions
+lm2 <- lm(std_ants ~ std_temp, data = data_control)
+summary(lm2)
+
+lm3 <- lm(std_ants ~ std_temp, data = data_experimental)
+summary(lm3)
+```
+
+
