@@ -45,7 +45,9 @@ summary(phorid.lm)
 
 #Plotting regression
 ggplot(data2, mapping = aes(Time, std_ants, color=Treatment))+
-  geom_smooth(method='lm')
+  geom_smooth(method='lm')+
+  ylab("Ant Activity")
+ggsave("phorid_fig1.png")
 
 ```
 
@@ -56,8 +58,11 @@ Effects on environmental conditions
 #separate control and experimental data into different panels. 
 ggplot(data2, mapping = aes(std_temp, std_ants))+
   geom_point()+
+  xlab("Temperature (°F)") +
+  ylab("Ant Activity")+
   facet_wrap(facets = vars(Treatment))+
   geom_smooth(method='lm')
+ggsave("phorid_fig2.png")
 
 #filtering data
 data_control = data2 %>% 
